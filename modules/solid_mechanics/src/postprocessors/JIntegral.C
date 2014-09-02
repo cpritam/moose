@@ -10,6 +10,7 @@ InputParameters validParams<JIntegral>()
   params.addRequiredParam<UserObjectName>("crack_front_definition","The CrackFrontDefinition user object name");
   params.addParam<unsigned int>("crack_front_node_index","The index of the node on the crack front corresponding to this q function");
   params.set<bool>("use_displaced_mesh") = false;
+  params.addParam<bool>("thermal_component", true, "Include thermal component in J calculation");
   return params;
 }
 
@@ -69,6 +70,7 @@ JIntegral::computeQpIntegral()
 
   for (unsigned int i = 0; i < 3; i++)
     eq_thermal += crack_direction(i)*_scalar_q[_qp]*_thermal_J_vec[_qp](i);
+
   //End
 
 

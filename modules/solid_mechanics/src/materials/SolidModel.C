@@ -1457,12 +1457,12 @@ SolidModel::computeThermalJvec()
     alpha = _alpha_function->value(_temperature[_qp],p);
 
     PiecewiseLinear * pl_func = dynamic_cast<PiecewiseLinear * >(_alpha_function);
-      
+
     if ( pl_func )
       dalpha_dT = pl_func->timeDerivative(_temperature[_qp],p);
     else
       mooseError("Provide PiecewiseLinear function for temperature dependent CTE");
-      
+
   }
 
   Real stress_trace;
@@ -1472,9 +1472,9 @@ SolidModel::computeThermalJvec()
   for (unsigned int i = 0; i < 3; i++)
   {
     Real val = alpha*_temp_grad[_qp](i)+dalpha_dT*_temp_grad[_qp](i)*(_temperature[_qp]-_stress_free_temp);
-      
+
     _thermal_J_vec[_qp](i) = stress_trace*val;
-      
+
   }
-	
+
 }
