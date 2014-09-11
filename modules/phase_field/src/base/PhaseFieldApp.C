@@ -63,6 +63,12 @@
 #include "ImageMesh.h"
 #include "MaskedBodyForce.h"
 
+#include "PFFracBulkRate.h"
+#include "PFFracIntVar.h"
+#include "PFFracCoupledInterface.h"
+#include "LinearIsoElasticPFDamage.h"
+#include "PFFracBulkRateMaterial.h"
+
 //#include "SPPARKSUserObject.h"
 //#include "SPPARKSAux.h"
 
@@ -118,6 +124,9 @@ PhaseFieldApp::registerObjects(Factory & factory)
   registerKernel(MaskedBodyForce);
   registerKernel(SwitchingFunctionConstraintLagrange);
   registerKernel(SwitchingFunctionConstraintEta);
+  registerKernel(PFFracBulkRate);
+  registerKernel(PFFracIntVar);
+  registerKernel(PFFracCoupledInterface);
 
   registerInitialCondition(CrossIC);
   registerInitialCondition(SmoothCircleIC);
@@ -146,6 +155,8 @@ PhaseFieldApp::registerObjects(Factory & factory)
   registerMaterial(ElasticEnergyMaterial);
   registerMaterial(MathFreeEnergy);
   registerMaterial(GBAnisotropy);
+  registerMaterial(LinearIsoElasticPFDamage);
+  registerMaterial(PFFracBulkRateMaterial);
 
   registerAux(NodalFloodCountAux);
   registerAux(BndsCalcAux);
