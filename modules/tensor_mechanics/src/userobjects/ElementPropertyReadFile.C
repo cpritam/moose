@@ -20,8 +20,6 @@ InputParameters validParams<ElementPropertyReadFile>()
   params.addParam<unsigned int>("rand_seed", 2000, "random seed");
   MooseEnum rve_options("periodic none","none");
   params.addParam<MooseEnum>("rve_type",rve_options , "Periodic or non-periodic grain distribution: Default is non-periodic");
-  MooseEnum rve_options("periodic none", "none");
-  params.addParam<MooseEnum>("rve_type", rve_options, "Periodic or non-periodic grain distribution: Default is non-periodic");
   return params;
 }
 
