@@ -572,11 +572,12 @@ FiniteStrainCrystalPlasticity::postSolveQp()
 {
   if (_err_tol)
   {
-    _err_tol = false;
+    /*    _err_tol = false;
     if ( _gen_rndm_stress_flag )
       _stress[_qp] = RankTwoTensor::genRandomSymmTensor( _rndm_scale_var, 1.0 );
     else
-      mooseError("FiniteStrainCrystalPlasticity: Constitutive failure");
+    mooseError("FiniteStrainCrystalPlasticity: Constitutive failure");*/
+    mooseException("FiniteStrainCrystalPlasticity: Constitutive failure");
   }
   else
   {
