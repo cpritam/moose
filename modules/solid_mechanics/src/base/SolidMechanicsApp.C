@@ -75,6 +75,8 @@
 #include "MultiAxialRotationAndTranslationAction.h"
 #include "InputRotOrTransUserObject.h"
 #include "InputRotOrTransFromFile.h"
+#include "VariableToFileAux.h"
+#include "SymmTensorToFileAux.h"
 
 template<>
 InputParameters validParams<SolidMechanicsApp>()
@@ -121,6 +123,8 @@ SolidMechanicsApp::registerObjects(Factory & factory)
   registerAux(DomainIntegralQFunction);
   registerAux(DomainIntegralTopologicalQFunction);
   registerAux(ElementsOnLineAux);
+  registerAux(VariableToFileAux);
+  registerAux(SymmTensorToFileAux);
 
   registerBoundaryCondition(DashpotBC);
   registerBoundaryCondition(PresetVelocity);
