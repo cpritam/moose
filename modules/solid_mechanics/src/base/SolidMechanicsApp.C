@@ -184,9 +184,6 @@ SolidMechanicsApp::registerObjects(Factory & factory)
   registerUserObject(CrackFrontDefinition);
   registerUserObject(InputRotOrTransUserObject);
   registerUserObject(InputRotOrTransFromFile);
-
-#undef registerObject
-#define registerObject(name) factory.regLegacy<name>(stringifyName(name))
 }
 
 // External entry point for dynamic syntax association
@@ -212,7 +209,7 @@ SolidMechanicsApp::associateSyntax(Syntax & syntax, ActionFactory & action_facto
   syntax.registerActionSyntax("DomainIntegralAction", "DomainIntegral","add_material");
   syntax.registerActionSyntax("EmptyAction", "BCs/MultiAxialRotationAndTranslation");
   syntax.registerActionSyntax("MultiAxialRotationAndTranslationAction", "BCs/MultiAxialRotationAndTranslation/*");
-  registerAction(PressureAction, "add_bc");
+
   registerAction(DisplacementAboutAxisAction, "add_bc");
   registerAction(CavityPressureAction, "add_bc");
   registerAction(CavityPressurePPAction, "add_postprocessor");
@@ -224,20 +221,4 @@ SolidMechanicsApp::associateSyntax(Syntax & syntax, ActionFactory & action_facto
   registerAction(DomainIntegralAction, "add_postprocessor");
   registerAction(DomainIntegralAction, "add_material");
   registerAction(MultiAxialRotationAndTranslationAction, "add_bc");
-
-#undef registerAction
-#define registerAction(tplt, action) action_factory.regLegacy<tplt>(stringifyName(tplt), action)
-
-}
-
-
-// DEPRECATED CONSTRUCTOR
-SolidMechanicsApp::SolidMechanicsApp(const std::string & deprecated_name, InputParameters parameters) :
-    MooseApp(deprecated_name, parameters)
-{
-  Moose::registerObjects(_factory);
-  SolidMechanicsApp::registerObjects(_factory);
-
-  Moose::associateSyntax(_syntax, _action_factory);
-  SolidMechanicsApp::associateSyntax(_syntax, _action_factory);
 }
