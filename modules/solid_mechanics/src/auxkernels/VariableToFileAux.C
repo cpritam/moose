@@ -36,12 +36,13 @@ VariableToFileAux::VariableToFileAux(const InputParameters & parameters) :
     _center(getParam<Point>("center")),
     _axial_dir(getParam<unsigned int>("axial_dir"))
 {
+  std::cout << "tid " << _tid << std::endl;
   _file_write.open(_out_file_name.c_str(), std::ofstream::out);
+  _file_write.close();
 }
 
 VariableToFileAux::~VariableToFileAux()
 {
-  _file_write.close();
 }    
 
 Real

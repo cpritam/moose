@@ -64,9 +64,13 @@ SymmTensorToFileAux::computeValue()
       if (_q_point[_qp](0) >= _xmin && _q_point[_qp](0) <= _xmax && _q_point[_qp](1) >= _ymin && _q_point[_qp](1) <= _ymax && _q_point[_qp](2) >= _zmin && _q_point[_qp](2) <= _zmax)
 	print_flag = true;
   }
-  
+    
   if (print_flag)
-    _file_write << _t_step << ' ' << _q_point[_qp](0) << ' ' << _q_point[_qp](1) << ' ' << _q_point[_qp](2) << ' ' << _tensor[_qp].xx() << ' ' << _tensor[_qp].yy() << ' ' << _tensor[_qp].zz() << ' ' << _tensor[_qp].xy() << ' ' << _tensor[_qp].yz() << ' ' << _tensor[_qp].xz() << std::endl;
+  {
+    _file_write.open(_out_file_name.c_str(), std::ofstream::app);
+    _file_write << _t_step << ' ' << _current_elem->id() << ' ' << _qp << ' ' << _q_point[_qp](0) << ' ' << _q_point[_qp](1) << ' ' << _q_point[_qp](2) << ' ' << _tensor[_qp].xx() << ' ' << _tensor[_qp].yy() << ' ' << _tensor[_qp].zz() << ' ' << _tensor[_qp].xy() << ' ' << _tensor[_qp].yz() << ' ' << _tensor[_qp].xz() << std::endl;
+    _file_write.close();
+  }
 
   return 0;
 }
