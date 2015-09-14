@@ -77,7 +77,6 @@
 #include "InputRotOrTransFromFile.h"
 #include "VariableToFileAux.h"
 #include "SymmTensorToFileAux.h"
-#include "SymmTensorInElementBlocks.h"
 
 template<>
 InputParameters validParams<SolidMechanicsApp>()
@@ -179,7 +178,6 @@ SolidMechanicsApp::registerObjects(Factory & factory)
 
   registerVectorPostprocessor(CrackDataSampler);
   registerVectorPostprocessor(LineMaterialSymmTensorSampler);
-  registerVectorPostprocessor(SymmTensorInElementBlocks);
 
   registerUserObject(MaterialTensorOnLine);
   registerUserObject(CavityPressureUserObject);
