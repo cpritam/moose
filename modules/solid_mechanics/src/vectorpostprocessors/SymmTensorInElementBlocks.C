@@ -23,7 +23,7 @@ InputParameters validParams<SymmTensorInElementBlocks>()
   params.addParam<Real>("axial_min", -1e6, "Minimum axial distance");
   params.addParam<Real>("axial_max", 1e6, "Maximum axial distance");
   params.addParam<unsigned int>("axial_dir", 2, "Axial direction");
-  params.addParam<>
+  params.addParam<Point>("center", 0, "Center Point");
 
   return params;
 }
@@ -31,9 +31,29 @@ InputParameters validParams<SymmTensorInElementBlocks>()
 SymmTensorInElementBlocks::SymmTensorInElementBlocks(const InputParameters & parameters) :
     ElementVectorPostprocessor(parameters),
     _elem_vars(declareVector("elem_vars")),
-    _mesh(_fe_problem.mesh()),
-    _tensor(getMaterialProperty<SymmTensor>("stress"))
+    _tensor(getMaterialProperty<SymmTensor>("stress")),
+    _radial_min(getParam<Real>("radial_min")),
+    _radial_max(getParam<Real>("radial_max")),
+    _axial_min(getParam<Real>("axial_min")),
+    _axial_max(getParam<Real>("axial_max")),
+    _axial_dir(getParam<unsigned int>("axial_dir")),
+    _center(getParam<Point>("center")),
+    _local_elem_data(0),
+    _global_elem_data(0),
+    _x_dir(0),
+    _y_dir(1)
 {
+  if (_axial_dir == 0)
+  {
+    _x_dir = 1;
+    _y_dir = 2;
+  }
+
+  if (_axial_dir == 1)
+  {
+    _x_dir = 0;
+    _y_dir = 2;
+  }
 }
 
 void
@@ -50,17 +70,20 @@ SymmTensorInElementBlocks::execute()
   unsigned int elem_id = _current_elem->id();
   for (unsigned int qp = 0; qp < _qrule->n_points(); ++qp)
   {
-    _local_elem_data.push_back(1.0 * elem_id);
-    _local_elem_data.push_back(1.0 * qp);
-    _local_elem_data.push_back(_q_point[qp](0));
-    _local_elem_data.push_back(_q_point[qp](1));
-    _local_elem_data.push_back(_q_point[qp](2));
-    _local_elem_data.push_back(_tensor[qp].xx());
-    _local_elem_data.push_back(_tensor[qp].yy());
-    _local_elem_data.push_back(_tensor[qp].zz());
-    _local_elem_data.push_back(_tensor[qp].xy());
-    _local_elem_data.push_back(_tensor[qp].yz());
-    _local_elem_data.push_back(_tensor[qp].zx());
+    if (pointInDomain(_q_point[qp]))
+    {
+      _local_elem_data.push_back(1.0 * elem_id);
+      _local_elem_data.push_back(1.0 * qp);
+      _local_elem_data.push_back(_q_point[qp](0));
+      _local_elem_data.push_back(_q_point[qp](1));
+      _local_elem_data.push_back(_q_point[qp](2));
+      _local_elem_data.push_back(_tensor[qp].xx());
+      _local_elem_data.push_back(_tensor[qp].yy());
+      _local_elem_data.push_back(_tensor[qp].zz());
+      _local_elem_data.push_back(_tensor[qp].xy());
+      _local_elem_data.push_back(_tensor[qp].yz());
+      _local_elem_data.push_back(_tensor[qp].zx());
+    }
   }
 }
 
@@ -89,4 +112,20 @@ SymmTensorInElementBlocks::threadJoin(const UserObject & y)
 {
   const SymmTensorInElementBlocks & elem_data = static_cast<const SymmTensorInElementBlocks &>(y);
   _global_elem_data.insert(_global_elem_data.end(),elem_data._local_elem_data.begin(), elem_data._local_elem_data.end());
+}
+
+bool
+SymmTensorInElementBlocks::pointInDomain(Point p)
+{
+  Real rdis = 0;
+  rdis += std::pow(p(_x_dir)-_center(_x_dir), 2.0);
+  rdis += std::pow(p(_y_dir)-_center(_y_dir), 2.0);
+
+  rdis = std::pow(rdis, 0.5);
+  Real zdis = p(_axial_dir)-_center(_axial_dir);
+  
+  if (rdis > _radial_max || rdis < _radial_min || zdis > _axial_max || zdis < _axial_min)
+    return false;
+
+  return true;
 }

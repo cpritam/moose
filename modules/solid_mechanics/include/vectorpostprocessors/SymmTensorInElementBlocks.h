@@ -40,7 +40,7 @@ public:
   virtual void initialize();
 
   /**
-   * Find th elements
+   * Find the elements
    */
   virtual void execute();
 
@@ -51,16 +51,19 @@ public:
 protected:
   /// The elements that intersect the line
   VectorPostprocessorValue & _elem_vars;
-  MooseMesh & _mesh;
-  std::vector<Real> _local_elem_data;
-  std::vector<Real> _global_elem_data;
   const MaterialProperty<SymmTensor> & _tensor;
-  Real _radial_rmin;
+  Real _radial_min;
   Real _radial_max;
   Real _axial_min;
   Real _axial_max;
   unsigned int _axial_dir;
   Point _center;
+  std::vector<Real> _local_elem_data;
+  std::vector<Real> _global_elem_data;
+  unsigned int _x_dir;
+  unsigned int _y_dir;
+  
+  virtual bool pointInDomain(Point p);
 };
 
 #endif
