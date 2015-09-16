@@ -24,6 +24,9 @@ InputParameters validParams<SymmTensorInElementBlocks>()
   params.addParam<Real>("axial_max", 1e6, "Maximum axial distance");
   params.addParam<unsigned int>("axial_dir", 2, "Axial direction");
   params.addParam<Point>("center", 0, "Center Point");
+  params.addParam<bool>("var_based_domain", false, "Domain determined based on coupled variable");
+  params.addParam<Real>("var_cutoff_value", 0, "Tensor output at qp where value of var greater than cutoff");
+  params.addCoupledVar("var", "Variable to determine domain for tensor output");
 
   return params;
 }
@@ -38,6 +41,10 @@ SymmTensorInElementBlocks::SymmTensorInElementBlocks(const InputParameters & par
     _axial_max(getParam<Real>("axial_max")),
     _axial_dir(getParam<unsigned int>("axial_dir")),
     _center(getParam<Point>("center")),
+    _var_based_domain(getParam<bool>("var_based_domain")),
+    _var_cutoff_value(getParam<Real>("var_cutoff_value")),
+    _var_coupled(isCoupled("var")),
+    _var(_var_coupled ? &coupledValue("var") : NULL),
     _local_elem_data(0),
     _global_elem_data(0),
     _x_dir(0),
@@ -70,7 +77,12 @@ SymmTensorInElementBlocks::execute()
   unsigned int elem_id = _current_elem->id();
   for (unsigned int qp = 0; qp < _qrule->n_points(); ++qp)
   {
-    if (pointInDomain(_q_point[qp]))
+    bool var_ge_cutoff = true;
+    if (_var_coupled)
+      if (_var_based_domain == true && (*_var)[qp] < _var_cutoff_value)
+	var_ge_cutoff = false;
+    
+    if (pointInDomain(_q_point[qp]) && var_ge_cutoff)
     {
       _local_elem_data.push_back(1.0 * elem_id);
       _local_elem_data.push_back(1.0 * qp);
@@ -121,9 +133,9 @@ SymmTensorInElementBlocks::pointInDomain(Point p)
 
   rdis = std::pow(rdis, 0.5);
   Real zdis = p(_axial_dir)-_center(_axial_dir);
-  
+
   if (rdis > _radial_max || rdis < _radial_min || zdis > _axial_max || zdis < _axial_min)
     return false;
-
+  
   return true;
 }

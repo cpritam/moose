@@ -58,6 +58,10 @@ protected:
   Real _axial_max;
   unsigned int _axial_dir;
   Point _center;
+  bool _var_based_domain;
+  Real _var_cutoff_value;
+  const bool _var_coupled;
+  const VariableValue * _var;
   std::vector<Real> _local_elem_data;
   std::vector<Real> _global_elem_data;
   unsigned int _x_dir;
