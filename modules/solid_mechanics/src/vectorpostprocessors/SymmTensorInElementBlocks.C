@@ -103,8 +103,6 @@ SymmTensorInElementBlocks::finalize()
   
   for (unsigned int i = 0; i < comm.size(); ++i)
     _elem_vars[i] = comm[i];
-
-  std::cout << "Size " << comm.size() << std::endl;
 }
 
 void
