@@ -16,7 +16,8 @@ GrainBoundaryAux::GrainBoundaryAux(const InputParameters & parameters) :
     _file_name(getParam<std::string>("file_name")),
     _gb_thickness(getParam<Real>("gb_thickness")),
     _mesh_dim(getParam<unsigned int>("mesh_dimension")),
-    _num_grains(0)
+    _num_grains(0),
+    _is_nodal(true)
 {
   readGrainCenter();
 }
@@ -26,8 +27,10 @@ GrainBoundaryAux::computeValue()
 {
   Point coord;
   
-  for (unsigned int i = 0; i < LIBMESH_DIM; ++i)
-    coord(i) = (*_current_node)(i);
+  if (_is_nodal)
+    coord = *_current_node;
+  else
+    coord = _q_point[_qp];
 
   for (unsigned int i = 0; i < _num_grains; ++i)
   {
@@ -47,7 +50,6 @@ GrainBoundaryAux::computeValue()
 
   Real rel_dis = grain2grain_dis/2.0 - node2grain_dis;
 
-  //  return std::exp(-std::pow(2.0 * rel_dis/_gb_thickness, 2.0));
   return rel_dis < _gb_thickness/2.0 ? 1.0 : std::exp(-2.0 * rel_dis/_gb_thickness);
 }
 

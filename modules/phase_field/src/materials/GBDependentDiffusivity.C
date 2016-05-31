@@ -32,5 +32,11 @@ GBDependentDiffusivity::computeQpProperties()
   RankTwoTensor gb_tensor;
 
   gb_tensor = (1.0 - _gb[_qp]) * _bulk_parameter * iden + _gb[_qp] * _gb_parameter * (iden - _gb_normal_tensor[_qp]);
+
+  for (unsigned int i = 0; i < LIBMESH_DIM; ++i)
+    for (unsigned int j = 0; j < LIBMESH_DIM; ++j)
+      if (gb_tensor(i,j) < 0.0)
+	gb_tensor(i, j) = 0.0;
+
   gb_tensor.fillRealTensor(_gb_dependent_tensor[_qp]);
 }

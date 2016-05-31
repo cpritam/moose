@@ -28,8 +28,16 @@ protected:
   virtual void initQpStatefulProperties();
   virtual void computeQpProperties();
 
+  const VariableValue & _u;
   const VariableGradient & _grad_u;
+  const VariableValue & _dphase_x;
+  const VariableValue & _dphase_y;
+  const VariableValue & _dphase_z;
+
   MaterialProperty<RankTwoTensor> & _normal_tensor;
+
+  Real _val_tol;
+  Real _grad_tol;
 };
 
 #endif

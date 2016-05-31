@@ -1,28 +1,31 @@
-#ifndef GRAINBOUNDARYAUX_H
-#define GRAINBOUNDARYAUX_H
+#ifndef GBCONCENTRATIONIC_H
+#define GBCONCENTRATIONIC_H
 
-#include "AuxKernel.h"
+#include "InitialCondition.h"
 
-class GrainBoundaryAux;
+class GBConcentrationIC;
 
 template<>
-InputParameters validParams<GrainBoundaryAux>();
+InputParameters validParams<GBConcentrationIC>();
 
-class GrainBoundaryAux : public AuxKernel
+class GBConcentrationIC : public InitialCondition
 {
 public:
-  GrainBoundaryAux(const InputParameters & parameters);
+  GBConcentrationIC(const InputParameters & parameters);
 
 protected:
-  virtual Real computeValue();
+  virtual Real value(const Point & p);
+
   void readGrainCenter();
+  Real computeGBValue(const Point & p);
 
   std::string _file_name;
   Real _gb_thickness;
   unsigned int _mesh_dim;
+  Real _gb_conc;
+  Real _matrix_conc;
   unsigned int _num_grains;
-  bool _is_nodal;
-  
+
   std::vector<Point> _grain_center;
 
   struct DistancePoint

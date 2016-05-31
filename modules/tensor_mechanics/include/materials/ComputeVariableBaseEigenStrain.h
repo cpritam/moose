@@ -29,7 +29,8 @@ protected:
 
   const MaterialProperty<RealTensorValue> & _base_tensor;
   const MaterialProperty<Real> & _prefactor;
-  RankTwoTensor _offset_tensor;
+  bool _has_offset_tensor;
+  const MaterialProperty<RankTwoTensor> * _offset_tensor;
 };
 
 #endif

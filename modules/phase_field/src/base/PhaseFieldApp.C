@@ -74,6 +74,7 @@
 #include "BimodalSuperellipsoidsIC.h"
 #include "ClosePackIC.h"
 #include "CrossIC.h"
+#include "GBConcentrationIC.h"
 #include "HexPolycrystalIC.h"
 #include "LatticeSmoothCircleIC.h"
 #include "MultiBoundingBoxIC.h"
@@ -158,6 +159,7 @@
 #include "Euler2RGBAux.h"
 #include "FeatureFloodCountAux.h"
 #include "GrainBoundaryAux.h"
+#include "GrainBoundaryNormalAux.h"
 #include "KKSGlobalFreeEnergy.h"
 #include "PFCEnergyDensity.h"
 #include "PFCRFFEnergyDensity.h"
@@ -323,6 +325,7 @@ PhaseFieldApp::registerObjects(Factory & factory)
   registerInitialCondition(BimodalSuperellipsoidsIC);
   registerInitialCondition(ClosePackIC);
   registerInitialCondition(CrossIC);
+  registerInitialCondition(GBConcentrationIC);
   registerInitialCondition(HexPolycrystalIC);
   registerInitialCondition(LatticeSmoothCircleIC);
   registerInitialCondition(MultiBoundingBoxIC);
@@ -394,6 +397,7 @@ PhaseFieldApp::registerObjects(Factory & factory)
   registerAux(Euler2RGBAux);
   registerAux(FeatureFloodCountAux);
   registerAux(GrainBoundaryAux);
+  registerAux(GrainBoundaryNormalAux);
   registerAux(KKSGlobalFreeEnergy);
   registerAux(PFCEnergyDensity);
   registerAux(PFCRFFEnergyDensity);
