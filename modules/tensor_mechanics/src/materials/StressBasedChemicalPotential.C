@@ -23,7 +23,6 @@ StressBasedChemicalPotential::StressBasedChemicalPotential(const InputParameters
     DerivativeMaterialInterface<Material>(parameters),
     _chemical_potential(declareProperty<Real>(getParam<MaterialPropertyName>("property_name"))),
     _stress_old(getMaterialPropertyOld<RankTwoTensor>("stress_name")),
-    //    _stress_old(getMaterialProperty<RankTwoTensor>("stress_name")),
     _direction_tensor(getMaterialProperty<RealTensorValue>("direction_tensor_name")),
     _prefactor(getMaterialProperty<Real>("prefactor_name")),
     _has_coupled_c(isCoupled("c"))

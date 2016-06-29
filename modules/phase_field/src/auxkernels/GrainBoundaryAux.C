@@ -49,8 +49,7 @@ GrainBoundaryAux::computeValue()
   Real node2grain_dis = std::abs(node2grain.contract(grain2grain));
 
   Real rel_dis = grain2grain_dis/2.0 - node2grain_dis;
-
-  return rel_dis < _gb_thickness/2.0 ? 1.0 : std::exp(-2.0 * rel_dis/_gb_thickness);
+  return std::exp(-0.5 * std::pow(2.0 * rel_dis/_gb_thickness, 2.0));
 }
 
 void
