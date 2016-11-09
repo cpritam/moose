@@ -60,3 +60,33 @@ RotationMatrix::rotVec1ToVec2(RealVectorValue vec1, RealVectorValue vec2)
   RealTensorValue rot2_to_z = rotVecToZ(vec2);
   return rot2_to_z.transpose() * rot1_to_z;
 }
+
+RealTensorValue
+RotationMatrix::rotxyzToCyl(RealVectorValue z_axis, RealVectorValue point)
+{
+  RealVectorValue r_axis = point - point.contract(z_axis) * z_axis;
+  Real r_axis_norm = r_axis.norm();
+
+  if (r_axis_norm < 1e-10)
+    mooseError("Point lies on axis - radial axis cannot be defined");
+  else
+    r_axis = r_axis / r_axis_norm;
+
+  RealVectorValue t_axis = r_axis.cross(z_axis);
+
+  RealTensorValue rot;
+  
+  rot(0, 0) = r_axis(0);
+  rot(0, 1) = t_axis(0);
+  rot(0, 2) = z_axis(0);
+
+  rot(1, 0) = r_axis(1);
+  rot(1, 1) = t_axis(1);
+  rot(1, 2) = z_axis(1);
+
+  rot(2, 0) = r_axis(2);
+  rot(2, 1) = t_axis(2);
+  rot(2, 2) = z_axis(2);
+
+  return rot;
+}

@@ -16,6 +16,7 @@
 #define ROTATIONMATRIX_H
 
 #include "Moose.h"
+#include "MooseError.h"
 #include "libmesh/vector_value.h"
 #include "libmesh/tensor_value.h"
 
@@ -24,11 +25,12 @@
  */
 namespace RotationMatrix
 {
-/// provides a rotation matrix that will rotate the vector vec to the z axis (the "2" direction)
-RealTensorValue rotVecToZ(RealVectorValue vec);
-
-/// provides a rotation matrix that will rotate the vector vec1 to vec2
-RealTensorValue rotVec1ToVec2(RealVectorValue vec1, RealVectorValue vec2);
+  /// provides a rotation matrix that will rotate the vector vec to the z axis (the "2" direction)
+  RealTensorValue rotVecToZ(RealVectorValue vec);
+  /// provides a rotation matrix that will rotate the vector vec1 to vec2
+  RealTensorValue rotVec1ToVec2(RealVectorValue vec1, RealVectorValue vec2);
+  /// provides a rotation matrix to convert from cartesian to cylindrical system at a point
+  RealTensorValue rotxyzToCyl(RealVectorValue z_axis, RealVectorValue point);
 }
 
 #endif // ROTATIONMATRIX_H

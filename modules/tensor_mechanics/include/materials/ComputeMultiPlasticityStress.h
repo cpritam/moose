@@ -90,10 +90,16 @@ protected:
   RealVectorValue _n_input;
 
   /// rotation matrix that takes _n to (0, 0, 1)
-  RealTensorValue _rot;
+  RankTwoTensor _rot;
 
   /// whether to perform the rotations necessary in finite-strain simulations
   bool _perform_finite_strain_rotations;
+
+  enum MaterialAxisEnum {
+    cylinder, none
+  } _material_axis_type;
+
+  RealVectorValue _z_axis;
 
   /// plastic strain
   MaterialProperty<RankTwoTensor> & _plastic_strain;
@@ -173,6 +179,8 @@ protected:
   /// Curvature that can be rotated by this class, and split into multiple increments (ie, its not const)
   RankTwoTensor _my_curvature;
 
+  MaterialProperty<RankTwoTensor> * _mat_sys_rot;
+  MaterialProperty<RankTwoTensor> * _mat_sys_rot_old;
   /**
    * makes all deactivated_due_to_ld false, and if >0 of them were initially true, returns true
    */
@@ -588,6 +596,8 @@ private:
   /// This boolean is delcared as a reference so that the variable is restartable
   /// data:  if we restart, the code will not think it is the first timestep again.
   bool & _step_one;
+
+  bool _is_material_axis_rotated;
 };
 
 #endif // COMPUTEMULTIPLASTICITYSTRESS_H

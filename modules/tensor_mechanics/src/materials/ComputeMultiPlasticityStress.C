@@ -86,6 +86,9 @@ validParams<ComputeMultiPlasticityStress>()
                         "optimal performance you can set "
                         "this to 'false' if you are only "
                         "ever using small strains");
+  MooseEnum material_axis("cylinder none", "none");
+  params.addParam<MooseEnum>("material_axis", material_axis, "Type of material axis - required for appropriate transformation");
+  params.addParam<RealVectorValue>("z_axis", "Z axis coordinate");
   params.addClassDescription("Material for multi-surface finite-strain plasticity");
   return params;
 }
@@ -110,10 +113,10 @@ ComputeMultiPlasticityStress::ComputeMultiPlasticityStress(const InputParameters
 
     _n_supplied(parameters.isParamValid("transverse_direction")),
     _n_input(_n_supplied ? getParam<RealVectorValue>("transverse_direction") : RealVectorValue()),
-    _rot(RealTensorValue()),
 
     _perform_finite_strain_rotations(getParam<bool>("perform_finite_strain_rotations")),
-
+    _material_axis_type((MaterialAxisEnum)(int)getParam<MooseEnum>("material_axis")),
+    _z_axis(isParamValid("z_axis") ? getParam<RealVectorValue>("z_axis") : RealVectorValue()),
     _plastic_strain(declareProperty<RankTwoTensor>("plastic_strain")),
     _plastic_strain_old(declarePropertyOld<RankTwoTensor>("plastic_strain")),
     _intnl(declareProperty<std::vector<Real>>("plastic_internal_parameter")),
@@ -160,7 +163,8 @@ ComputeMultiPlasticityStress::ComputeMultiPlasticityStress(const InputParameters
     _my_strain_increment(RankTwoTensor()),
     _my_flexural_rigidity_tensor(RankFourTensor()),
     _my_curvature(RankTwoTensor()),
-    _step_one(declareRestartableData<bool>("step_one", true))
+    _step_one(declareRestartableData<bool>("step_one", true)),
+    _is_material_axis_rotated(false)
 {
   if (_epp_tol <= 0)
     mooseError("ComputeMultiPlasticityStress: ep_plastic_tolerance must be positive");
@@ -173,6 +177,27 @@ ComputeMultiPlasticityStress::ComputeMultiPlasticityStress(const InputParameters
           "ComputeMultiPlasticityStress: transverse_direction vector must not have zero length");
     else
       _n_input /= _n_input.norm();
+
+    _is_material_axis_rotated = true;
+  }
+
+  if (_material_axis_type != none)
+  {
+    _mat_sys_rot = &declareProperty<RankTwoTensor>("mat_sys_rot");
+    _mat_sys_rot_old = &declarePropertyOld<RankTwoTensor>("mat_sys_rot");
+    _is_material_axis_rotated = true;
+
+    if (_material_axis_type == cylinder && isParamValid("z_axis"))
+    {
+      Real z_axis_norm = _z_axis.norm();
+      
+      if (z_axis_norm > 0.0)
+	_z_axis = _z_axis / z_axis_norm;
+      else
+	mooseError("A non-zero material axis must be passed");
+    }
+    else
+      mooseError("z_axis have to be supplied for cylindrical axis");
   }
 
   if (_num_surfaces == 1)
@@ -215,6 +240,12 @@ ComputeMultiPlasticityStress::initQpStatefulProperties()
   {
     checkDerivatives();
     mooseError("Finite-differencing completed.  Exiting with no error");
+  }
+
+  if (_material_axis_type == cylinder)
+  {
+    (*_mat_sys_rot)[_qp] = RotationMatrix::rotxyzToCyl(_z_axis, _q_point[_qp]);
+    (*_mat_sys_rot_old)[_qp] = (*_mat_sys_rot)[_qp];
   }
 }
 
@@ -301,11 +332,12 @@ ComputeMultiPlasticityStress::computeQpStress()
   // Rotate the tensors to the current configuration
   if (_perform_finite_strain_rotations)
   {
-    _stress[_qp] = _rotation_increment[_qp] * _stress[_qp] * _rotation_increment[_qp].transpose();
-    _elastic_strain[_qp] =
-        _rotation_increment[_qp] * _elastic_strain[_qp] * _rotation_increment[_qp].transpose();
-    _plastic_strain[_qp] =
-        _rotation_increment[_qp] * _plastic_strain[_qp] * _rotation_increment[_qp].transpose();
+    _stress[_qp] = _rotation_increment[_qp]*_stress[_qp]*_rotation_increment[_qp].transpose();
+    _elastic_strain[_qp] = _rotation_increment[_qp] * _elastic_strain[_qp] * _rotation_increment[_qp].transpose();
+    _plastic_strain[_qp] = _rotation_increment[_qp] * _plastic_strain[_qp] * _rotation_increment[_qp].transpose();
+
+    if (_material_axis_type != none)
+      (*_mat_sys_rot)[_qp] = _rotation_increment[_qp] * (*_mat_sys_rot_old)[_qp];
   }
 }
 
@@ -316,7 +348,13 @@ ComputeMultiPlasticityStress::preReturnMap()
   {
     // this is a rotation matrix that will rotate _n to the "z" axis
     _rot = RotationMatrix::rotVecToZ(_n[_qp]);
+  }
 
+  if (_material_axis_type != none)
+    _rot = (*_mat_sys_rot_old)[_qp];
+
+  if (_is_material_axis_rotated)
+  {
     // rotate the tensors to this frame
     _my_elasticity_tensor.rotate(_rot);
     _stress_old[_qp].rotate(_rot);
@@ -339,6 +377,20 @@ ComputeMultiPlasticityStress::postReturnMap()
     // this is a rotation matrix that will rotate "z" axis back to _n
     _rot = _rot.transpose();
 
+    // Rotate n by _rotation_increment
+    for (unsigned int i = 0; i < LIBMESH_DIM; ++i)
+    {
+      _n[_qp](i) = 0;
+      for (unsigned int j = 0; j < LIBMESH_DIM; ++j)
+        _n[_qp](i) += _rotation_increment[_qp](i, j)*_n_old[_qp](j);
+    }
+  }
+
+  if (_material_axis_type != none)        
+    _rot = _rot.transpose();
+
+  if (_is_material_axis_rotated)
+  {
     // rotate the tensors back to original frame where _n is correctly oriented
     _my_elasticity_tensor.rotate(_rot);
     _Jacobian_mult[_qp].rotate(_rot);
@@ -355,7 +407,6 @@ ComputeMultiPlasticityStress::postReturnMap()
       _my_curvature.rotate(_rot);
       (*_couple_stress)[_qp].rotate(_rot);
     }
-
     // Rotate n by _rotation_increment
     for (unsigned int i = 0; i < LIBMESH_DIM; ++i)
     {
