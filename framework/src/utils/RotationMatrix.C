@@ -62,7 +62,7 @@ RotationMatrix::rotVec1ToVec2(RealVectorValue vec1, RealVectorValue vec2)
 }
 
 RealTensorValue
-RotationMatrix::rotxyzToCyl(RealVectorValue z_axis, RealVectorValue point)
+RotationMatrix::rotxyzToCyl(RealVectorValue global_x, RealVectorValue global_y, RealVectorValue global_z, RealVectorValue z_axis, RealVectorValue point)
 {
   RealVectorValue r_axis = point - point.contract(z_axis) * z_axis;
   Real r_axis_norm = r_axis.norm();
@@ -76,17 +76,17 @@ RotationMatrix::rotxyzToCyl(RealVectorValue z_axis, RealVectorValue point)
 
   RealTensorValue rot;
   
-  rot(0, 0) = r_axis(0);
-  rot(0, 1) = t_axis(0);
-  rot(0, 2) = z_axis(0);
+  rot(0, 0) = global_x.contract(r_axis);
+  rot(0, 1) = global_x.contract(t_axis);
+  rot(0, 2) = global_x.contract(z_axis);
 
-  rot(1, 0) = r_axis(1);
-  rot(1, 1) = t_axis(1);
-  rot(1, 2) = z_axis(1);
+  rot(1, 0) = global_y.contract(r_axis);
+  rot(1, 1) = global_y.contract(t_axis);
+  rot(1, 2) = global_y.contract(z_axis);
 
-  rot(2, 0) = r_axis(2);
-  rot(2, 1) = t_axis(2);
-  rot(2, 2) = z_axis(2);
+  rot(2, 0) = global_z.contract(r_axis);
+  rot(2, 1) = global_z.contract(t_axis);
+  rot(2, 2) = global_z.contract(z_axis);
 
   return rot;
 }

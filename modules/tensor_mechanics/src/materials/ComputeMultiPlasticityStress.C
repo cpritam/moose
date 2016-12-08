@@ -88,7 +88,9 @@ validParams<ComputeMultiPlasticityStress>()
                         "ever using small strains");
   MooseEnum material_axis("cylinder none", "none");
   params.addParam<MooseEnum>("material_axis", material_axis, "Type of material axis - required for appropriate transformation");
-  params.addParam<RealVectorValue>("z_axis", "Z axis coordinate");
+  params.addParam<RealVectorValue>("global_x", RealVectorValue(1, 0, 0), "Global x axis");
+  params.addParam<RealVectorValue>("global_y", RealVectorValue(0, 1, 0), "Global y axis");
+  params.addParam<RealVectorValue>("axis_of_cylinder", "Z-axis of cylindrical system");
   params.addClassDescription("Material for multi-surface finite-strain plasticity");
   return params;
 }
@@ -116,7 +118,9 @@ ComputeMultiPlasticityStress::ComputeMultiPlasticityStress(const InputParameters
 
     _perform_finite_strain_rotations(getParam<bool>("perform_finite_strain_rotations")),
     _material_axis_type((MaterialAxisEnum)(int)getParam<MooseEnum>("material_axis")),
-    _z_axis(isParamValid("z_axis") ? getParam<RealVectorValue>("z_axis") : RealVectorValue()),
+    _global_x(getParam<RealVectorValue>("global_x")),
+    _global_y(getParam<RealVectorValue>("global_y")),
+    _axis_of_cylinder(isParamValid("axis_of_cylinder") ? getParam<RealVectorValue>("axis_of_cylinder") : RealVectorValue()),
     _plastic_strain(declareProperty<RankTwoTensor>("plastic_strain")),
     _plastic_strain_old(declarePropertyOld<RankTwoTensor>("plastic_strain")),
     _intnl(declareProperty<std::vector<Real>>("plastic_internal_parameter")),
@@ -183,21 +187,23 @@ ComputeMultiPlasticityStress::ComputeMultiPlasticityStress(const InputParameters
 
   if (_material_axis_type != none)
   {
+    _global_z = _global_x.cross(_global_y);
+
     _mat_sys_rot = &declareProperty<RankTwoTensor>("mat_sys_rot");
     _mat_sys_rot_old = &declarePropertyOld<RankTwoTensor>("mat_sys_rot");
     _is_material_axis_rotated = true;
 
-    if (_material_axis_type == cylinder && isParamValid("z_axis"))
+    if (_material_axis_type == cylinder && isParamValid("axis_of_cylinder"))
     {
-      Real z_axis_norm = _z_axis.norm();
+      Real _axis_norm = _axis_of_cylinder.norm();
       
-      if (z_axis_norm > 0.0)
-	_z_axis = _z_axis / z_axis_norm;
+      if (_axis_norm > 0.0)
+	_axis_of_cylinder = _axis_of_cylinder / _axis_norm;
       else
 	mooseError("A non-zero material axis must be passed");
     }
     else
-      mooseError("z_axis have to be supplied for cylindrical axis");
+      mooseError("Z axis have to be supplied for cylindrical axis");
   }
 
   if (_num_surfaces == 1)
@@ -244,7 +250,7 @@ ComputeMultiPlasticityStress::initQpStatefulProperties()
 
   if (_material_axis_type == cylinder)
   {
-    (*_mat_sys_rot)[_qp] = RotationMatrix::rotxyzToCyl(_z_axis, _q_point[_qp]);
+    (*_mat_sys_rot)[_qp] = RotationMatrix::rotxyzToCyl(_global_x, _global_y, _global_z, _axis_of_cylinder, _q_point[_qp]);
     (*_mat_sys_rot_old)[_qp] = (*_mat_sys_rot)[_qp];
   }
 }

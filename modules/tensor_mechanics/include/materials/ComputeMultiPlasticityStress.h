@@ -99,7 +99,11 @@ protected:
     cylinder, none
   } _material_axis_type;
 
-  RealVectorValue _z_axis;
+  RealVectorValue _global_x;
+  RealVectorValue _global_y;
+  RealVectorValue _global_z;
+
+  RealVectorValue _axis_of_cylinder;
 
   /// plastic strain
   MaterialProperty<RankTwoTensor> & _plastic_strain;

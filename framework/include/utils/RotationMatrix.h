@@ -30,7 +30,7 @@ namespace RotationMatrix
   /// provides a rotation matrix that will rotate the vector vec1 to vec2
   RealTensorValue rotVec1ToVec2(RealVectorValue vec1, RealVectorValue vec2);
   /// provides a rotation matrix to convert from cartesian to cylindrical system at a point
-  RealTensorValue rotxyzToCyl(RealVectorValue z_axis, RealVectorValue point);
+  RealTensorValue rotxyzToCyl(RealVectorValue global_x, RealVectorValue global_y, RealVectorValue global_z, RealVectorValue z_axis, RealVectorValue point);
 }
 
 #endif // ROTATIONMATRIX_H
